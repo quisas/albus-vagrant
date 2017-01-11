@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# export HOME=/home/ubuntu
+# Komischerweise nötig, sonst startet Xvfb nicht
+export HOME=/home/ubuntu
+
+# Xpra display Nummer
 export DISPLAY=:100
 
 xpra start --no-pulseaudio :100

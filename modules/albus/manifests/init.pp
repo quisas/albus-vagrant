@@ -26,6 +26,9 @@ class albus {
   file { '/opt/albus/main/school':
     ensure => 'link',
     target => '/opt/albus/school',
+    owner => "ubuntu",
+    group => "ubuntu",
+    require => Vcsrepo["/opt/albus/main"]
   }
 
   # Arbeits-Verzeichnisse, die die Applikation benötigt
@@ -33,6 +36,7 @@ class albus {
     ensure => 'directory',
     owner => "ubuntu",
     group => "ubuntu",
+    require => Vcsrepo["/opt/albus/main"],
   }
 
 

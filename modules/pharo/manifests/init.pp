@@ -20,6 +20,10 @@ class pharo {
     ensure => installed,
   }
 
+  # Besser als top
+  package { 'htop':
+    ensure => installed,
+  }
   
   
   # Haupt Installations-Verzeichnisse
@@ -55,7 +59,6 @@ class pharo {
     group => "ubuntu",
     mode => "+x",
     source => "puppet:///modules/pharo/start-albus.sh",
-#    requires => Package['xpra'],
   }
 
   file { "/opt/albus/server/stop-albus.sh":
