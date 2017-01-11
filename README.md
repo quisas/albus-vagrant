@@ -1,0 +1,1 @@
+Vagrant Konfiguration für Albus
