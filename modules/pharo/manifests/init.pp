@@ -24,7 +24,51 @@ class pharo {
   package { 'htop':
     ensure => installed,
   }
+
+
+  # Für Pharo 32bit
+  exec { "provide 32bit":
+	  command  => "/usr/bin/dpkg --add-architecture i386 && apt-get update",
+		cwd      => "/opt/albus/server",
+    user => "root",
+	}
+
+  $lib32_packages = ['libc6:i386', 'zlib1g:i386', 'libncurses5:i386', 'libbz2-1.0:i386', 'libssl1.0.0:i386', 'libX11.6:i386', 'libGL.1:i386', 'libasound2:i386']
   
+  package { $lib32_packages:
+    ensure => installed,
+    require => Exec["provide 32bit"],
+  }
+  
+  # package { 'zlib1g:i386':
+  #   ensure => installed,
+  #   require => Exec["provide 32bit"],
+  # }
+  # package { 'libncurses5:i386':
+  #   ensure => installed,
+  #   require => Exec["provide 32bit"],
+  # }
+  # package { 'libbz2-1.0:i386':
+  #   ensure => installed,
+  #   require => Exec["provide 32bit"],
+  # }
+  # package { 'libssl1.0.0:i386':
+  #   ensure => installed,
+  #   require => Exec["provide 32bit"],
+  # }
+  # package { 'libX11.6:i386':
+  #   ensure => installed,
+  #   require => Exec["provide 32bit"],
+  # }
+  # package { 'libGL.1:i386':
+  #   ensure => installed,
+  #   require => Exec["provide 32bit"],
+  # }
+  # package { 'libasound2:i386':
+  #   ensure => installed,
+  #   require => Exec["provide 32bit"],
+  # }
+
   
   # Haupt Installations-Verzeichnisse
   file { ["/opt/albus", "/opt/albus/install", "/opt/albus/pharo", "/opt/albus/server"]:
@@ -76,6 +120,7 @@ class pharo {
 		cwd      => "/opt/albus/pharo",
 		path     => "/usr/bin:/usr/sbin:/bin",
 		before    => Exec["install albus"],
+    require => Package[$lib32_packages],
 		creates  => "/opt/albus/pharo/albus.image",
     user => "ubuntu",
 	}

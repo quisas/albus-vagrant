@@ -75,11 +75,9 @@ Vagrant.configure(2) do |config|
   config.ssh.forward_x11 = true
   
   # Bootstrapping puppet in the guest
-  # TODO: apt-packages in puppet auslagern, ausser puppet selbst
   config.vm.provision "shell", :inline => <<-SHELL
-    dpkg --add-architecture i386
+    timedatectl set-timezone Europe/Zurich
     apt-get update
-    apt-get install -y libc6:i386 zlib1g:i386 libncurses5:i386 libbz2-1.0:i386 libssl1.0.0:i386 libX11.6:i386 libGL.1:i386 libasound2:i386
     apt-get install -y puppet
 SHELL
 

@@ -1,4 +1,8 @@
 #!/bin/bash
 
+SSH_FILE="/tmp/xpra_to_albus.ssh_config"
+vagrant ssh-config --host xpra_albus > $SSH_FILE
+SSH_COMMAND="ssh -F $SSH_FILE"
+
 # Weitere Optionen: --jpeg-quality=50 --compress=7
-cd /Applications/internet/Xpra.app/Contents && Helpers/Xpra attach ssh/ubuntu@127.0.0.1:2222/100 --ssh="ssh -i /Users/dassi/code/smalltalk/seaside/albus/server-vm/.vagrant/machines/default/virtualbox/private_key"
+cd /Applications/internet/Xpra.app/Contents && Helpers/Xpra attach ssh/xpra_albus/100 --ssh="$SSH_COMMAND"
