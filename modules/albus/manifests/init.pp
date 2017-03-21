@@ -11,6 +11,7 @@ class albus {
     ensure => installed,
   }
 
+  # Für ASCII-Captcha-Erzeugung
   package { 'figlet':
     ensure => installed,
   }
@@ -62,7 +63,6 @@ class albus {
   }
 
   # Schulspezifisches Datei-Repo
-  # TODO: Kann man hier auch eine andere Schule konfigurieren?
   vcsrepo { "/opt/albus/school":
     ensure   => latest,
     owner    => 'ubuntu',

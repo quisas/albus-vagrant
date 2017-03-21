@@ -20,12 +20,6 @@ class pharo {
     ensure => installed,
   }
 
-  # Besser als top
-  package { 'htop':
-    ensure => installed,
-  }
-
-
   # Für Pharo 32bit
   exec { "provide 32bit":
 	  command  => "/usr/bin/dpkg --add-architecture i386 && apt-get update",
@@ -39,36 +33,6 @@ class pharo {
     ensure => installed,
     require => Exec["provide 32bit"],
   }
-  
-  # package { 'zlib1g:i386':
-  #   ensure => installed,
-  #   require => Exec["provide 32bit"],
-  # }
-  # package { 'libncurses5:i386':
-  #   ensure => installed,
-  #   require => Exec["provide 32bit"],
-  # }
-  # package { 'libbz2-1.0:i386':
-  #   ensure => installed,
-  #   require => Exec["provide 32bit"],
-  # }
-  # package { 'libssl1.0.0:i386':
-  #   ensure => installed,
-  #   require => Exec["provide 32bit"],
-  # }
-  # package { 'libX11.6:i386':
-  #   ensure => installed,
-  #   require => Exec["provide 32bit"],
-  # }
-  # package { 'libGL.1:i386':
-  #   ensure => installed,
-  #   require => Exec["provide 32bit"],
-  # }
-  # package { 'libasound2:i386':
-  #   ensure => installed,
-  #   require => Exec["provide 32bit"],
-  # }
-
   
   # Haupt Installations-Verzeichnisse
   file { ["/opt/albus", "/opt/albus/install", "/opt/albus/pharo", "/opt/albus/server"]:
@@ -89,13 +53,6 @@ class pharo {
     group => "ubuntu",
     source => "puppet:///modules/pharo/installAlbus.st"
   }
-
-  # file { "/opt/albus/install/installKshpTest.st":
-	# 	ensure => present,
-  #   owner => "ubuntu",
-  #   group => "ubuntu",
-  #   source => "puppet:///modules/pharo/installKshpTest.st"
-  # }
 
   file { "/opt/albus/server/start-albus.sh":
 		ensure => present,
@@ -144,5 +101,12 @@ class pharo {
 	}
 
 
+  # # Output info for connecting to Albus Web-Application
+  # exec { 'output web URL':
+  #   # path      => '/bin',
+  #   command   => "ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '192\.([0-9]*\.){2}[0-9]*' | grep -v '127.0.0.1'",
+  #   logoutput => true,
+  #   require => Exec['run albus'],
+  # }
 
 }

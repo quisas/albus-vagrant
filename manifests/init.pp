@@ -1,5 +1,6 @@
-# mod 'puppetlabs-apt', '2.3.0'
+# Puppet Config Albus
+
+include server
 include nginx
 include albus
 include pharo
-# include installservices

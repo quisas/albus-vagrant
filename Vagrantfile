@@ -31,6 +31,7 @@ Vagrant.configure(2) do |config|
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
   # your network.
+
   config.vm.network "public_network"
 
   config.vm.hostname = 'albus'
@@ -45,6 +46,7 @@ Vagrant.configure(2) do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
+
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
     vb.gui = false
@@ -52,6 +54,28 @@ Vagrant.configure(2) do |config|
     # Customize the amount of memory on the VM:
     # vb.memory = "1024"
   end
+
+  
+  # Demo auf Exoscale
+  config.vm.provider "cloudstack" do |cs, override|
+
+    override.vm.box = "exoscale-ubuntu-xenial64-10GB"
+
+    cs.api_key    = "EXO2e31c1b6ff73dcfe44d9a1f1"
+    cs.secret_key = "F9onW0_TTXeM8iB9AuuuQABhT9VSgJZy4iMFVuLDeT0"
+    cs.service_offering_name = "Tiny"
+    cs.security_group_names = ['default']
+
+    # das exoscale cloudstack plugin musste gepatcht werden. Siehe auch:
+    # https://github.com/MissionCriticalCloud/vagrant-cloudstack/pull/168
+    
+    cs.keypair = "dassi"
+    cs.ssh_key = "~/.ssh/id_rsa"
+    cs.ssh_user = "root"
+
+#    cs.network_type = "Basic"
+    
+  end  
   
   #
   # View the documentation for the provider you are using for more
