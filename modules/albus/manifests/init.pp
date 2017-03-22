@@ -58,7 +58,7 @@ class albus {
     require  => [ Package["git"] ],
 
     # TODO Echtes repo und branch URL nehmen
-    source => "https://github.com/quisas/albus-test.git",
+    source => "https://github.com/quisas/albus.git",
     revision => 'master',
   }
 

@@ -17,4 +17,8 @@ NOW=$(date +"%Y%m%d%H%M")
 
 $VMDIR/pharo-ui $VMDIR/albus.image --no-default-preferences > $MAINDIR/log/pharo_$NOW.log 2>&1  &
 
-echo $! > $PID_FILE
+# Das wäre das bashscript pharo-ui
+# echo $! > $PID_FILE
+
+sleep 2
+pgrep pharo > $PID_FILE

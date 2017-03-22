@@ -8,7 +8,7 @@ Gofer new
 (Smalltalk at: #ConfigurationOfAlbus) loadDemo.
 
 "Datenbank mit Demo-Schule neu aufsetzen"
-ALAlbusInstaller installDemo.
+(Smalltalk at: #ALAlbusInstaller) installDemo.
 
 "Speichern und quit"
 Smalltalk snapshot: true andQuit: true.
