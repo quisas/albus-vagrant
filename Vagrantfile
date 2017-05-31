@@ -1,3 +1,4 @@
+# coding: utf-8
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -53,6 +54,19 @@ Vagrant.configure(2) do |config|
   
     # Customize the amount of memory on the VM:
     # vb.memory = "1024"
+
+
+    # Logfile der Console geht auf COM1 serial port. Wir müssen aufpassen, dass wir hier
+    # keinen absoluten Pfad drin haben, wegen Export als OVA Appliance
+    # Docs von VBoxManage modifyvm:
+    # [--uartmode<1-N> disconnected|
+    #                                          server <pipe>|
+    #                                          client <pipe>|
+    #                                          tcpserver <port>|
+    #                                          tcpclient <hostname:port>|
+    #                                          file <file>|
+    #                                         <devicename>]
+    vb.customize ["modifyvm", :id, "--uartmode1", "disconnected"]
   end
 
   
@@ -61,8 +75,8 @@ Vagrant.configure(2) do |config|
 
     override.vm.box = "exoscale-ubuntu-xenial64-10GB"
 
-    cs.api_key    = "EXO2e31c1b6ff73dcfe44d9a1f1"
-    cs.secret_key = "F9onW0_TTXeM8iB9AuuuQABhT9VSgJZy4iMFVuLDeT0"
+    cs.api_key    = Secret.exoscale_api_key
+    cs.secret_key = Secret.exoscale_secret_key
     cs.service_offering_name = "Tiny"
     cs.security_group_names = ['default']
 
