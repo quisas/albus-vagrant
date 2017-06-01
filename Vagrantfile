@@ -7,12 +7,6 @@
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
 Vagrant.configure(2) do |config|
-  # The most common configuration options are documented and commented below.
-  # For a complete reference, please see the online documentation at
-  # https://docs.vagrantup.com.
-
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://atlas.hashicorp.com/search.
   config.vm.box = "ubuntu/xenial64"
 
   # Disable automatic box update checking. If you disable this, then
@@ -32,10 +26,7 @@ Vagrant.configure(2) do |config|
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
   # your network.
-
   config.vm.network "public_network"
-
-  config.vm.hostname = 'albus'
 
   # Share an additional folder to the guest VM. The first argument is
   # the path on the host to the actual folder. The second argument is
@@ -43,64 +34,85 @@ Vagrant.configure(2) do |config|
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
 
-  # Provider-specific configuration so you can fine-tune various
-  # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-
-  config.vm.provider "virtualbox" do |vb|
-    # Display the VirtualBox GUI when booting the machine
-    vb.gui = true
   
-    # Customize the amount of memory on the VM:
-    # vb.memory = "1024"
+  config.vm.hostname = 'albus'
 
 
-    # Logfile der Console geht auf COM1 serial port. Wir müssen aufpassen, dass wir hier
-    # keinen absoluten Pfad drin haben, wegen Export als OVA Appliance
-    # Docs von VBoxManage modifyvm:
-    # [--uartmode<1-N> disconnected|
-    #                                          server <pipe>|
-    #                                          client <pipe>|
-    #                                          tcpserver <port>|
-    #                                          tcpclient <hostname:port>|
-    #                                          file <file>|
-    #                                         <devicename>]
-    vb.customize ["modifyvm", :id, "--uartmode1", "disconnected"]
+  #
+  # DEVELOPMENT MACHINE
+  #
+  config.vm.define :dev do |dev|
+
+#    dev.vm.box = "albus_dev_base"
+
+    dev.vm.provider "virtualbox" do |vb|
+      # Display the VirtualBox GUI when booting the machine
+      vb.gui = true
+      
+      # Customize the amount of memory on the VM:
+      # vb.memory = "1024"
+
+
+      # Logfile der Console geht auf COM1 serial port. Wir müssen aufpassen, dass wir hier
+      # keinen absoluten Pfad drin haben, wegen Export als OVA Appliance
+      # Docs von VBoxManage modifyvm:
+      # [--uartmode<1-N> disconnected|
+      #                                          server <pipe>|
+      #                                          client <pipe>|
+      #                                          tcpserver <port>|
+      #                                          tcpclient <hostname:port>|
+      #                                          file <file>|
+      #                                         <devicename>]
+      vb.customize ["modifyvm", :id, "--uartmode1", "disconnected"]
+    end
+
+    # # Run puppet provisioning
+    # dev.vm.provision :puppet do |puppet|
+    #   puppet.manifest_file = "init.pp"
+    #   puppet.module_path = "modules"
+    # end
+
+    # Run Ansible from the Vagrant VM
+    dev.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "playbook.yml"
+    end
+    
   end
 
-  
-  # Demo auf Exoscale
-  config.vm.provider "cloudstack" do |cs, override|
 
-    override.vm.box = "exoscale-ubuntu-xenial64-10GB"
-
-    cs.api_key    = Secret.exoscale_api_key
-    cs.secret_key = Secret.exoscale_secret_key
-    cs.service_offering_name = "Tiny"
-    cs.security_group_names = ['default']
-
-    # das exoscale cloudstack plugin musste gepatcht werden. Siehe auch:
-    # https://github.com/MissionCriticalCloud/vagrant-cloudstack/pull/168
-    
-    cs.keypair = "dassi"
-    cs.ssh_key = "~/.ssh/id_rsa"
-    cs.ssh_user = "root"
-
-#    cs.network_type = "Basic"
-    
-  end  
-  
   #
-  # View the documentation for the provider you are using for more
-  # information on available options.
+  # DEMO MACHINE auf Exoscale
+  #
+  config.vm.define :demo do |demo|
 
-  # Define a Vagrant Push strategy for pushing to Atlas. Other push strategies
-  # such as FTP and Heroku are also available. See the documentation at
-  # https://docs.vagrantup.com/v2/push/atlas.html for more information.
-  # config.push.define "atlas" do |push|
-  #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
-  # end
+    demo.vm.provider "cloudstack" do |cs, override|
+
+      override.vm.box = "exoscale-ubuntu-xenial64-10GB"
+
+      cs.api_key    = Secret.exoscale_api_key
+      cs.secret_key = Secret.exoscale_secret_key
+      cs.service_offering_name = "Tiny"
+      cs.security_group_names = ['default']
+
+      # das exoscale cloudstack plugin musste gepatcht werden. Siehe auch:
+      # https://github.com/MissionCriticalCloud/vagrant-cloudstack/pull/168
+      
+      cs.keypair = "dassi"
+      cs.ssh_key = "~/.ssh/id_rsa"
+      cs.ssh_user = "root"
+
+      #    cs.network_type = "Basic"
+      
+    end
+
+    # Run puppet provisioning
+    demo.vm.provision :puppet do |puppet|
+      puppet.manifest_file = "init_demo.pp"
+      puppet.module_path = "modules"
+    end
+
+  end
+  
 
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
@@ -119,11 +131,6 @@ Vagrant.configure(2) do |config|
     apt-get install -y puppet
 SHELL
 
-  # Run puppet provisioning
-  config.vm.provision :puppet do |puppet|
-    puppet.manifest_file = "init.pp"
-    puppet.module_path = "modules"
-  end
   
 
 end

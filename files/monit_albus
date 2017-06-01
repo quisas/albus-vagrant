@@ -1,0 +1,9 @@
+# set alert andreas.brodbeck@mindclue.ch
+
+check process albus_pharo with pidfile /opt/albus/pharo/albus.pid
+			start program = "/bin/bash --login -c 'cd /opt/albus/server && ./start-albus.sh'" as uid ubuntu and gid ubuntu
+			stop program = "/bin/bash --login -c 'cd /opt/albus/server && ./stop-albus.sh'" as uid ubuntu and gid ubuntu with timeout 90 seconds
+ 			if 7 restarts within 10 cycles then stop
+			if failed url http://127.0.0.1/ping and content == "OK" for 2 cycles then alert
+			if totalmem > 700 Mb then alert
+			if cpu > 60% for 4 cycles then alert

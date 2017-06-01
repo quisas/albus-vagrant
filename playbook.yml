@@ -1,0 +1,265 @@
+---
+- include: albus.yaml
+
+- hosts: all
+  remote_user: ubuntu
+  tasks:
+  - name: Add apt architecture i386 for pharo
+    remote_user: root
+    shell: /usr/bin/dpkg --add-architecture i386 && apt-get update
+    args:
+      chdir: /opt/albus/server
+  
+  - name: Install basic apt packages
+    action: apt pkg= state=installed
+    with_items:
+    - git
+    - imagemagick
+    - libreoffice
+    - figlet
+    - postfix
+    - xauth
+    - xpra
+    - monit
+    - htop
+    - libc6:i386
+    - zlib1g:i386
+    - libncurses5:i386
+    - libbz2-1.0:i386
+    - libssl1.0.0:i386
+    - libX11.6:i386
+    - libGL.1:i386
+    - libasound2:i386
+
+
+  
+  - name: Server scripts
+    copy:
+      src: files/server
+      dest: /opt/albus/
+    copy:
+      src: files/install
+      dest: /opt/albus/install
+
+    
+  - name: Create working folders and symlinks
+    file:
+      path: /opt/albus
+      state: directory
+      mode: 0755
+    file:
+      path: /opt/albus/main/tmp
+      state: directory
+      mode: 0755
+    file:
+      path: /opt/albus/main/log_objects
+      state: directory
+      mode: 0755
+    file:
+      path: /opt/albus/main/log
+      state: directory
+      mode: 0755
+    file:
+      src: /opt/albus/main/school
+      dest: /opt/albus/school
+      state: link
+    file:
+      src: /opt/albus/pharo/main
+      dest: /opt/albus/main
+      state: link
+
+
+    
+  - name: git repo Albus base code
+    git:
+      repo: https://github.com/quisas/albus.git
+      dest: /opt/albus/main
+
+  - name: git repo Albus school code
+    git:
+      repo: {{albus.school.repo}}
+      dest: /opt/albus/school
+
+  #    
+  # CRON JOBS
+  #
+  - name: cronjob hourly
+    cron:
+      user: ubuntu
+      minute: "1"
+      hour: "*"
+      job: "cd /opt/albus/server && ./run-task.sh runHourlyTasks 240"
+  - name: cronjob midhourly
+    cron:
+      user: ubuntu
+      minute: "30"
+      hour: "*"
+      job: "cd /opt/albus/server && ./run-task.sh runMidHourlyTasks 240"
+  - name: cronjob nightly
+    cron:
+      user: ubuntu
+      minute: "3"
+      hour: "2"
+      job: "cd /opt/albus/server && ./run-task.sh runNightlyTasks 240"
+  - name: cronjob nightly2
+    cron:
+      user: ubuntu
+      minute: "18"
+      hour: "2"
+      job: "cd /opt/albus/server && ./run-task.sh runNightlyTasks2 240"
+  - name: cronjob weekly
+    cron:
+      user: ubuntu
+      minute: "23"
+      hour: "2"
+      weekday: 'sun'
+      job: "cd /opt/albus/server && ./run-task.sh runWeeklyTasks"
+  - name: cronjob daily
+    cron:
+      user: ubuntu
+      minute: "5"
+      hour: "12"
+      job: "cd /opt/albus/server && ./run-task.sh runDailyTasks"
+  - name: cronjob all5minutes
+    cron:
+      user: ubuntu
+      minute: "*/5"
+      hour: "*"
+      job: "cd /opt/albus/server && ./run-task.sh runAllFiveMinutesTasks"
+  - name: cronjob saveTheImage
+    cron:
+      user: ubuntu
+      minute: "16"
+      hour: "6-20/6"
+      job: "cd /opt/albus/server && ./run-task.sh runSaveImageTask"
+  - name: cronjob backupImage
+    cron:
+      user: ubuntu
+      minute: "25"
+      hour: "6-20/6"
+      job: "cd /opt/albus/server/ && ./backup-image-snapshot.sh"
+
+
+  #
+  # NGINX WEBSERVER
+  #
+  - name: nginx package
+    apt: pkg=nginx
+  - name: nginx start
+    service:
+      name: nginx
+      state: started
+  - name: nginx.conf file
+    copy:
+      src: files/nginx.conf
+      dest: /etc/nginx/nginx.conf
+      owner: 'root'
+      group: 'root'
+
+  #
+  # MONIT
+  #
+  - name: monit init.d file
+    copy:
+      src: files/initd_monit
+      dest: /etc/init.d/monit
+      owner: 'root'
+      group: 'root'
+  - name: monitrc file
+    copy:
+      src: files/monitrc
+      dest: /etc/monit/monitrc
+      owner: 'root'
+      group: 'root'
+  - name: monit config for albus
+    copy:
+      src: files/monit_albus
+      dest: /etc/monit/conf.d/albus
+      owner: 'root'
+      group: 'root'
+  - name: monit start
+    service:
+      name: monit
+      state: started
+
+      
+  #
+  # MOLLY-GUARD
+  #
+  - name: molly-guard package
+    apt: pkg=molly-guard
+  - name: molly-guard default message file
+    copy:
+      src: files/mollyguard_message
+      dest: /etc/molly-guard/messages.d/default
+      owner: 'root'
+      group: 'root'
+  - name: molly-guard shutdown albus file
+    copy:
+      src: files/mollyguard_albus
+      dest: /etc/molly-guard/run.d/50-shutdown-albus-and-wait
+      owner: 'root'
+      group: 'root'
+      mode: "+x"
+  - name: Remove default mollyguard query hostname file
+    file:
+      path: /etc/molly-guard/run.d/30-query-hostname
+      state: absent
+
+
+  #
+  # PHARO SMALLTALK
+  #
+  - name: Download pharo smalltalk
+    remote_user: ubuntu
+    shell: curl get.pharo.org/50+vm | bash && mv Pharo.image albus.image && mv Pharo.changes albus.changes
+    args:
+      chdir: /opt/albus/pharo
+      creates: /opt/albus/pharo/albus.image
+
+
+  #
+  # ALBUS
+  #
+  - name: Install Albus code in pharo image
+    remote_user: ubuntu
+    shell: /opt/albus/pharo/pharo albus.image --no-default-preferences st /opt/albus/install/installAlbus.st && touch albusIsInstalled
+    args:
+      chdir: /opt/albus/pharo
+      creates: /opt/albus/pharo/albusIsInstalled
+  - name: Running Albus
+    remote_user: root
+    shell: monit reload && sleep 2 && monit start albus_pharo
+    # unless => '/usr/bin/pgrep pharo',
+
+
+
+# # Show IP address on login...
+# 	file { "/etc/network/if-up.d/show-ip-address":
+# 		ensure => present,
+#     owner => "root",
+#     group => "root",
+#     mode => "+x",
+#     source => "puppet:///modules/server/show-ip-address"
+#   }
+
+#   file { "/usr/local/bin/get-ip-address":
+# 		ensure => present,
+#     owner => "root",
+#     group => "root",
+#     mode => "+x",
+#     source => "puppet:///modules/server/get-ip-address"
+#   }
+
+#   file { "/etc/update-motd.d/99-albus":
+# 		ensure => present,
+#     owner => "root",
+#     group => "root",
+#     mode => "+x",
+#     source => "puppet:///modules/server/99-albus"
+#   }
+  
+
+- hosts: demo
+  roles:
+     - demo
