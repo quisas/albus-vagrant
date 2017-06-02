@@ -1,0 +1,16 @@
+Author fullName: '{{albus.school.developerName}}'.
+
+"Neuste Metacello Config holen"
+Gofer new
+			url: '{{albus.school.metacelloUrl}}';
+			package: 'ConfigurationOfAlbus{{albus.school.code}}';
+			load.
+
+"Spezifische Version laden"
+(Smalltalk at: #ConfigurationOfAlbus{{albus.school.code}}) load: '{{albus.school.version}}'.
+
+"Datenbank mit Schule neu aufsetzen"
+(Smalltalk at: #ALAlbusInstaller) installSchool: AL{{albus.school.code}}SchoolConfigurator.
+
+"Speichern und quit"
+Smalltalk snapshot: true andQuit: true.

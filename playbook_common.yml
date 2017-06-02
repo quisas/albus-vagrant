@@ -1,17 +1,20 @@
 ---
-- include: albus.yaml
-
 - hosts: all
-  remote_user: ubuntu
+  #remote_user: root
+  become_user: root
+  become: true
+  vars_files:
+    - albus.yml
   tasks:
+  
   - name: Add apt architecture i386 for pharo
-    remote_user: root
     shell: /usr/bin/dpkg --add-architecture i386 && apt-get update
-    args:
-      chdir: /opt/albus/server
   
   - name: Install basic apt packages
-    action: apt pkg= state=installed
+    # action: "apt pkg={{item}} state=latest"
+    apt:
+      name: "{{item}}"
+      state: installed
     with_items:
     - git
     - imagemagick
@@ -22,6 +25,12 @@
     - xpra
     - monit
     - htop
+    - unzip
+
+  # TODO: Oben reinnehmen sobald Ansible diesen Bug released hat: https://github.com/ansible/ansible/pull/24703
+  - name: Install basic apt packages i386 by hand
+    shell: "apt-get install {{item}} -y"
+    with_items:
     - libc6:i386
     - zlib1g:i386
     - libncurses5:i386
@@ -33,52 +42,90 @@
 
 
   
-  - name: Server scripts
+  - file:
+      path: "{{item}}"
+      state: directory
+      mode: 0755
+      owner: 'ubuntu'
+      group: 'ubuntu'
+    with_items:
+    - /opt/albus
+    - /opt/albus/install
+    
+  - name: Copy server scripts
+    become_user: ubuntu
     copy:
       src: files/server
       dest: /opt/albus/
-    copy:
-      src: files/install
-      dest: /opt/albus/install
+      mode: '775'
+  # - name: Copy install scripts
+  #   become_user: ubuntu
+  #   copy:
+  #     src: files/install
+  #     dest: /opt/albus/
+  #     mode: '775'
+  - template:
+      src: files/install/installAlbus.st.j2
+      dest: /opt/albus/install/installAlbus.st
+      owner: 'ubuntu'
+      group: 'ubuntu'
+      mode: "u=rwx,g=rwx,o=rx"
 
-    
-  - name: Create working folders and symlinks
-    file:
-      path: /opt/albus
-      state: directory
-      mode: 0755
-    file:
-      path: /opt/albus/main/tmp
-      state: directory
-      mode: 0755
-    file:
-      path: /opt/albus/main/log_objects
-      state: directory
-      mode: 0755
-    file:
-      path: /opt/albus/main/log
-      state: directory
-      mode: 0755
-    file:
-      src: /opt/albus/main/school
-      dest: /opt/albus/school
-      state: link
-    file:
-      src: /opt/albus/pharo/main
-      dest: /opt/albus/main
-      state: link
-
-
-    
+# TODO: Versionsnummer hier auf git mappen und nicht latest nehmen!
   - name: git repo Albus base code
+    become_user: ubuntu
     git:
       repo: https://github.com/quisas/albus.git
       dest: /opt/albus/main
+      force: yes
 
+# TODO: Versionsnummer hier auf git mappen und nicht latest nehmen!
   - name: git repo Albus school code
+    become_user: ubuntu
     git:
-      repo: {{albus.school.repo}}
+      repo: "{{albus.school.repo}}"
       dest: /opt/albus/school
+      
+    
+  # Create working folders and symlinks
+  - file:
+      path: /opt/albus/pharo
+      state: directory
+      mode: 0755
+      owner: 'ubuntu'
+      group: 'ubuntu'
+  - file:
+      path: /opt/albus/main/tmp
+      state: directory
+      mode: 0755
+      owner: 'ubuntu'
+      group: 'ubuntu'
+  - file:
+      path: /opt/albus/main/log/objects
+      state: directory
+      mode: 0755
+      owner: 'ubuntu'
+      group: 'ubuntu'
+  - file:
+      path: /opt/albus/main/log
+      state: directory
+      mode: 0755
+      owner: 'ubuntu'
+      group: 'ubuntu'
+  - file:
+      path: /opt/albus/main/school
+      src: /opt/albus/school
+      state: link
+      owner: 'ubuntu'
+      group: 'ubuntu'
+  - file:
+      path: /opt/albus/pharo/main
+      src: /opt/albus/main
+      state: link
+      owner: 'ubuntu'
+      group: 'ubuntu'
+
+
 
   #    
   # CRON JOBS
@@ -145,16 +192,16 @@
   #
   - name: nginx package
     apt: pkg=nginx
-  - name: nginx start
-    service:
-      name: nginx
-      state: started
   - name: nginx.conf file
     copy:
       src: files/nginx.conf
       dest: /etc/nginx/nginx.conf
       owner: 'root'
       group: 'root'
+  - name: nginx start
+    service:
+      name: nginx
+      state: started
 
   #
   # MONIT
@@ -200,66 +247,8 @@
       dest: /etc/molly-guard/run.d/50-shutdown-albus-and-wait
       owner: 'root'
       group: 'root'
-      mode: "+x"
+      mode: "u+x,g+x"
   - name: Remove default mollyguard query hostname file
     file:
       path: /etc/molly-guard/run.d/30-query-hostname
       state: absent
-
-
-  #
-  # PHARO SMALLTALK
-  #
-  - name: Download pharo smalltalk
-    remote_user: ubuntu
-    shell: curl get.pharo.org/50+vm | bash && mv Pharo.image albus.image && mv Pharo.changes albus.changes
-    args:
-      chdir: /opt/albus/pharo
-      creates: /opt/albus/pharo/albus.image
-
-
-  #
-  # ALBUS
-  #
-  - name: Install Albus code in pharo image
-    remote_user: ubuntu
-    shell: /opt/albus/pharo/pharo albus.image --no-default-preferences st /opt/albus/install/installAlbus.st && touch albusIsInstalled
-    args:
-      chdir: /opt/albus/pharo
-      creates: /opt/albus/pharo/albusIsInstalled
-  - name: Running Albus
-    remote_user: root
-    shell: monit reload && sleep 2 && monit start albus_pharo
-    # unless => '/usr/bin/pgrep pharo',
-
-
-
-# # Show IP address on login...
-# 	file { "/etc/network/if-up.d/show-ip-address":
-# 		ensure => present,
-#     owner => "root",
-#     group => "root",
-#     mode => "+x",
-#     source => "puppet:///modules/server/show-ip-address"
-#   }
-
-#   file { "/usr/local/bin/get-ip-address":
-# 		ensure => present,
-#     owner => "root",
-#     group => "root",
-#     mode => "+x",
-#     source => "puppet:///modules/server/get-ip-address"
-#   }
-
-#   file { "/etc/update-motd.d/99-albus":
-# 		ensure => present,
-#     owner => "root",
-#     group => "root",
-#     mode => "+x",
-#     source => "puppet:///modules/server/99-albus"
-#   }
-  
-
-- hosts: demo
-  roles:
-     - demo

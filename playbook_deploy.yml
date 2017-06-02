@@ -1,0 +1,40 @@
+---
+
+#
+# TEAR DOWN
+#
+
+- hosts: all
+  become_user: root
+  become: true
+  vars_files:
+    - albus.yml
+  tasks:
+  
+  - name: Install maintenance screen
+  - name: Do backup of data
+  - name: Stop pharo image
+    shell: monit stop albus_pharo
+
+  - name: Do backup pharo image
+
+
+# UPDATE TO NEWEST SERVER STATE
+- include: playbook_common.yml
+
+# School specific (???), for stuff on the server only for this school
+- include: playbook_school.yml
+
+#
+# BRING UP
+#
+- hosts: all
+  become_user: root
+  become: true
+  vars_files:
+    - albus.yml
+  tasks:
+  
+  - name: Start pharo image
+    shell: monit start albus_pharo
+  - name: Remove maintenance screen

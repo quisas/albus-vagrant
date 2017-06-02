@@ -74,7 +74,7 @@ Vagrant.configure(2) do |config|
 
     # Run Ansible from the Vagrant VM
     dev.vm.provision "ansible_local" do |ansible|
-      ansible.playbook = "playbook.yml"
+      ansible.playbook = "playbook_install.yml"
     end
     
   end
@@ -127,8 +127,8 @@ Vagrant.configure(2) do |config|
   # Bootstrapping puppet in the guest
   config.vm.provision "shell", :inline => <<-SHELL
     timedatectl set-timezone Europe/Zurich
-    apt-get update
-    apt-get install -y puppet
+    # apt-get update
+    # apt-get install -y puppet
 SHELL
 
   

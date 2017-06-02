@@ -1,3 +1,13 @@
+#
+# - Schulcode ergibt die ConfigurationOfAlbusSchulname und ALSchulcodeSchoolConfigurator
+#
+
+---
 albus:
   school:
+    code: Kshp
+    metacelloUrl: http://monticello.mindclue.dyndns.org:8753/albus_kshp
     repo: https://github.com/quisas/albus-school-hogwarts.git
+    developerName: AndreasBrodbeck
+    version: 1.0.2
+    productionHost: proplan.hopro.edu
