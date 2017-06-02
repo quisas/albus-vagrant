@@ -1,3 +1,0 @@
-#!/bin/bash
-echo "Willkommen auf dem Albus Server. Ihre IP Adressen sind:"
-ifconfig | grep "inet addr"
