@@ -20,10 +20,10 @@
 
 
 # UPDATE TO NEWEST SERVER STATE
-- include: playbook_common.yml
+- import_playbook: playbook_common.yml
 
 # School specific (???), for stuff on the server only for this school
-- include: playbook_school.yml
+- import_playbook: playbook_school.yml
 
 #
 # BRING UP

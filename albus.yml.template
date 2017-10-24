@@ -5,9 +5,12 @@
 ---
 albus:
   school:
-    code: Kshp
-    metacelloUrl: http://monticello.mindclue.dyndns.org:8753/albus_kshp
+    code: Hogwarts
+    metacelloUrl: http://smalltalkhub.com/mc/quisas/albus/main
+    metacelloUsername: 
+    metacelloPassword: 
     repo: https://github.com/quisas/albus-school-hogwarts.git
     developerName: AndreasBrodbeck
-    version: 1.0.2
+    version: development
+    environment: demo # oder production oder development
     productionHost: proplan.hopro.edu

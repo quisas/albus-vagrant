@@ -201,7 +201,8 @@
   - name: nginx start
     service:
       name: nginx
-      state: started
+      enabled: yes
+      state: restarted
 
   #
   # MONIT

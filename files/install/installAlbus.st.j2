@@ -1,16 +1,22 @@
+| version schoolConfigurator |
+
 Author fullName: '{{albus.school.developerName}}'.
 
 "Neuste Metacello Config holen"
 Gofer new
-			url: '{{albus.school.metacelloUrl}}';
+			url: '{{albus.school.metacelloUrl}}' username: '{{albus.school.metacelloUsername}}' password: '{{albus.school.metacelloPassword}}';
 			package: 'ConfigurationOfAlbus{{albus.school.code}}';
 			load.
 
 "Spezifische Version laden"
-(Smalltalk at: #ConfigurationOfAlbus{{albus.school.code}}) load: '{{albus.school.version}}'.
+version := '{{albus.school.version}}'.
+version first isLetter ifTrue: [version := version asSymbol].
+
+((Smalltalk at: #ConfigurationOfAlbus{{albus.school.code}}) project version: version) load.
 
 "Datenbank mit Schule neu aufsetzen"
-(Smalltalk at: #ALAlbusInstaller) installSchool: AL{{albus.school.code}}SchoolConfigurator.
+schoolConfigurator := (Smalltalk at: #AL{{albus.school.code}}SchoolConfigurator).
+(Smalltalk at: #ALAlbusInstaller) installSchool: schoolConfigurator environment: '{{albus.school.environment}}'.
 
 "Speichern und quit"
 Smalltalk snapshot: true andQuit: true.
