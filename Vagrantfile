@@ -87,6 +87,10 @@ Vagrant.configure(2) do |config|
 
     demo.vm.provider "cloudstack" do |cs, override|
 
+      # Wegen NFS Bug, siehe  https://github.com/hashicorp/vagrant/issues/5401
+      override.nfs.functional = false
+
+
       override.vm.box = "exoscale-ubuntu-xenial64-10GB"
 
       cs.api_key    = Secret.exoscale_api_key
@@ -105,12 +109,17 @@ Vagrant.configure(2) do |config|
       
     end
 
-    # Run puppet provisioning
-    demo.vm.provision :puppet do |puppet|
-      puppet.manifest_file = "init_demo.pp"
-      puppet.module_path = "modules"
-    end
+    # # Run puppet provisioning
+    # demo.vm.provision :puppet do |puppet|
+    #   puppet.manifest_file = "init_demo.pp"
+    #   puppet.module_path = "modules"
+    # end
 
+    # Run Ansible from the Vagrant VM
+    demo.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "playbook_install.yml"
+    end
+    
   end
   
 
@@ -124,7 +133,7 @@ Vagrant.configure(2) do |config|
 
   config.ssh.forward_x11 = true
   
-  # Bootstrapping puppet in the guest
+  # Bootstrapping stuff in the guest
   config.vm.provision "shell", :inline => <<-SHELL
     timedatectl set-timezone Europe/Zurich
     # apt-get update
