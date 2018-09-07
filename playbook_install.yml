@@ -24,8 +24,8 @@
   - name: Download pharo smalltalk
     become_user: ubuntu
     # become: true
-    shell: curl get.pharo.org/50+vm | bash && mv Pharo.image albus.image && mv Pharo.changes albus.changes
-#    shell: curl get.pharo.org/64/60+vmT | bash && mv Pharo.image albus.image && mv Pharo.changes albus.changes
+#    shell: curl get.pharo.org/50+vm | bash && mv Pharo.image albus.image && mv Pharo.changes albus.changes
+    shell: curl get.pharo.org/64/61+vmT | bash && mv Pharo.image albus.image && mv Pharo.changes albus.changes
     args:
       chdir: /opt/albus/pharo
       creates: /opt/albus/pharo/albus.image

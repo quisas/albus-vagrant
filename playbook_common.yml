@@ -14,7 +14,7 @@
     # action: "apt pkg={{item}} state=latest"
     apt:
       name: "{{item}}"
-      state: installed
+      state: present
     with_items:
     - git
     - imagemagick
@@ -23,7 +23,7 @@
     - postfix
     - xauth
     - xpra
-    - monit
+    - monit=1:5.16-2
     - htop
     - unzip
 

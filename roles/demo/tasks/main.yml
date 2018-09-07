@@ -1,0 +1,10 @@
+- name: Scripts for demo server
+  copy:
+    src: files/demo
+    dest: /opt/albus/
+- name: cronjob for resetting demo
+  cron:
+    user: ubuntu
+    minute: "45"
+    hour: "23"
+    job: "/opt/albus/pharo/pharo albus.image --no-default-preferences st /opt/albus/demo/resetDemo.st"
