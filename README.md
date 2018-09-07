@@ -4,16 +4,16 @@ Vagrant erzeugt ein Ubuntu Xenial Server und installiert alle Komponenten für A
 - Pharo Smalltalk
 - Albus Smalltalk Code
 - Diverse apt-Packages
+- Div. Linux-Konfigurationen
 
 Für Hilfe zu vagrant Befehlen: vagrant -h
 
-# vagrant up
+## VM erzeugen
 
-Erstellt die VM neu oder startet eine vorhandene VM.
+	vagrant up --provision dev
 
-# Etc
+## Etc
 
-scripts/xpra_to_albus.sh
-vagrant ssh
-
-Auf Pharo kommt man mittels Xpra remote screen.
+- Siehe Tools im Ordner scripts/
+- Mittels vagrant ssh gelangt man 
+- Auf Pharo kommt man mittels Xpra remote screen.

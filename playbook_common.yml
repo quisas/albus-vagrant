@@ -6,7 +6,13 @@
   vars_files:
     - albus.yml
   tasks:
-  
+
+  - name: Add apt repos
+    apt_repository:
+      repo: ppa:certbot/certbot
+
+      #TODO certbot laufen lassen und Zertifikat erstellen. Braucht jedoch funktionierende Domain...
+    
   - name: Add apt architecture i386 for pharo
     shell: /usr/bin/dpkg --add-architecture i386 && apt-get update
   
@@ -132,30 +138,35 @@
   #
   - name: cronjob hourly
     cron:
+      name: cronjob hourly
       user: ubuntu
       minute: "1"
       hour: "*"
       job: "cd /opt/albus/server && ./run-task.sh runHourlyTasks 240"
   - name: cronjob midhourly
     cron:
+      name: cronjob midhourly
       user: ubuntu
       minute: "30"
       hour: "*"
       job: "cd /opt/albus/server && ./run-task.sh runMidHourlyTasks 240"
   - name: cronjob nightly
     cron:
+      name: cronjob nightly
       user: ubuntu
       minute: "3"
       hour: "2"
       job: "cd /opt/albus/server && ./run-task.sh runNightlyTasks 240"
   - name: cronjob nightly2
     cron:
+      name: cronjob nightly2
       user: ubuntu
       minute: "18"
       hour: "2"
       job: "cd /opt/albus/server && ./run-task.sh runNightlyTasks2 240"
   - name: cronjob weekly
     cron:
+      name: cronjob weekly
       user: ubuntu
       minute: "23"
       hour: "2"
@@ -163,24 +174,28 @@
       job: "cd /opt/albus/server && ./run-task.sh runWeeklyTasks"
   - name: cronjob daily
     cron:
+      name: cronjob daily
       user: ubuntu
       minute: "5"
       hour: "12"
       job: "cd /opt/albus/server && ./run-task.sh runDailyTasks"
   - name: cronjob all5minutes
     cron:
+      name: cronjob all5minutes
       user: ubuntu
       minute: "*/5"
       hour: "*"
       job: "cd /opt/albus/server && ./run-task.sh runAllFiveMinutesTasks"
   - name: cronjob saveTheImage
     cron:
+      name: cronjob saveTheImage
       user: ubuntu
       minute: "16"
       hour: "6-20/6"
       job: "cd /opt/albus/server && ./run-task.sh runSaveImageTask"
   - name: cronjob backupImage
     cron:
+      name: cronjob backupImage
       user: ubuntu
       minute: "25"
       hour: "6-20/6"
@@ -192,6 +207,8 @@
   #
   - name: nginx package
     apt: pkg=nginx
+  - name: nginx certbot plugin
+    apt: pkg=python-certbot-nginx
   - name: nginx.conf file
     copy:
       src: files/nginx.conf
