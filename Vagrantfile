@@ -7,7 +7,7 @@
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
 Vagrant.configure(2) do |config|
-  config.vm.box = "ubuntu/xenial64"
+  config.vm.box = "ubuntu/bionic64"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -66,11 +66,6 @@ Vagrant.configure(2) do |config|
       vb.customize ["modifyvm", :id, "--uartmode1", "disconnected"]
     end
 
-    # # Run puppet provisioning
-    # dev.vm.provision :puppet do |puppet|
-    #   puppet.manifest_file = "init.pp"
-    #   puppet.module_path = "modules"
-    # end
 
     # Run Ansible from the Vagrant VM
     dev.vm.provision "ansible_local" do |ansible|
@@ -109,11 +104,6 @@ Vagrant.configure(2) do |config|
       
     end
 
-    # # Run puppet provisioning
-    # demo.vm.provision :puppet do |puppet|
-    #   puppet.manifest_file = "init_demo.pp"
-    #   puppet.module_path = "modules"
-    # end
 
     # Run Ansible from the Vagrant VM
     demo.vm.provision "ansible_local" do |ansible|
@@ -136,8 +126,6 @@ Vagrant.configure(2) do |config|
   # Bootstrapping stuff in the guest
   config.vm.provision "shell", :inline => <<-SHELL
     timedatectl set-timezone Europe/Zurich
-    # apt-get update
-    # apt-get install -y puppet
 SHELL
 
   

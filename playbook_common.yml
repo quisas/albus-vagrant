@@ -29,9 +29,10 @@
     - postfix
     - xauth
     - xpra
-    - monit=1:5.16-2
+    - monit # =1:5.16-2
     - htop
     - unzip
+    - aptitude
 
   # TODO: Oben reinnehmen sobald Ansible diesen Bug released hat: https://github.com/ansible/ansible/pull/24703
   - name: Install basic apt packages i386 by hand
