@@ -1,0 +1,2 @@
+GS_HOME="/opt/albus/gemstone/GsDevKit_home"
+PATH=$GS_HOME/bin:$GS_HOME/etc/GsDevKit_seaside31/bin:$PATH

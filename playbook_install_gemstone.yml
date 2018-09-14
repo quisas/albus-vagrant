@@ -1,0 +1,160 @@
+---
+- import_playbook: playbook_common.yml
+
+- hosts: all
+  become_user: root
+  become: true
+  vars_files:
+    - albus.yml
+  environment:
+    GS_HOME: /opt/albus/gemstone/GsDevKit_home
+  # export PATH=$GS_HOME/bin:$GS_HOME/etc/GsDevKit_seaside31/bin:$PATH
+
+  tasks:
+
+  - name: Install GemStone specific apt packages
+    apt:
+      name: "{{item}}"
+      state: present
+    with_items:
+    - x11-apps
+  
+
+  # Create working folders and symlinks
+  - file:
+      path: /opt/albus/gemstone
+      state: directory
+      mode: 0755
+      owner: 'ubuntu'
+      group: 'ubuntu'
+  - file:
+      path: /opt/albus/gemstone/main
+      src: /opt/albus/main
+      state: link
+      owner: 'ubuntu'
+      group: 'ubuntu'
+  - name: environment.d file
+    copy:
+      src: files/gemstone/environment
+      dest: /usr/lib/environment.d/991-gemstone.conf
+      owner: 'root'
+      group: 'root'
+  - name: profile.d file
+    copy:
+      src: files/gemstone/environment.sh
+      dest: /etc/profile.d/gemstone.sh
+      owner: 'root'
+      group: 'root'
+      
+
+  #
+  # GEMSTONE SMALLTALK
+  #
+
+  - name: Install GsDevKit_home
+    become_user: ubuntu
+    git:
+      repo: https://github.com/GsDevKit/GsDevKit_home.git
+      dest: /opt/albus/gemstone/GsDevKit_home
+      force: yes
+      update: no
+#      version: gsdevkit
+
+  - name: Install GsDevKit_seaside
+    become_user: ubuntu
+    git:
+      repo: https://github.com/GsDevKit/GsDevKit_seaside31.git
+      dest: /opt/albus/gemstone/GsDevKit_home/etc/GsDevKit_seaside31
+      force: yes
+      update: no
+      # version: gsdevkit oder master?
+
+  - name: Run Seaside/GemStone Installer Script
+    become_user: ubuntu
+    become: true
+    shell: ./installServerSeaside -c https -z 8083 albus 3.4.2
+    args:
+      chdir: /opt/albus/gemstone/GsDevKit_home/etc/GsDevKit_seaside31/bin
+      creates: /opt/albus/gemstone/GsDevKit_home/server/stones/albus/extents/extent0.dbf
+
+
+  - name: Create tode client
+    become_user: ubuntu
+    become: true
+    shell: ./createClient tode
+    args:
+      chdir: /opt/albus/gemstone/GsDevKit_home/bin
+      creates: /opt/albus/gemstone/GsDevKit_home/dev/clients/tode
+    
+  # export PATH=$GS_HOME/bin:$GS_HOME/etc/GsDevKit_seaside31/bin:$PATH
+  # installServerSeaside -c https -z 8383 seaside_3210 3.2.10
+
+  - name: Start albus stone
+    become_user: ubuntu
+    become: true
+    shell: ./startStone -b albus
+    args:
+      chdir: /opt/albus/gemstone/GsDevKit_home/bin
+  
+
+  #
+  # ALBUS
+  #
+
+
+  # add project to tode
+  - name: tode project add entry
+    become_user: ubuntu
+    become: true
+    # Ging nicht wegen backticks in tode. Nötig für escaping von # shell: "./todeIt albus project entry --config=Albus{{albus.school.code}} --version={{albus.school.version}} --repo={{albus.school.metacelloUrl}} --loads=`#('Installation')` /sys/local/server/projects"
+    shell: "./todeIt albus project entry --config=Albus{{albus.school.code}} --version={{albus.school.version}} --repo={{albus.school.metacelloUrl}} /sys/local/server/projects"
+    args:
+      chdir: /opt/albus/gemstone/GsDevKit_home/bin
+      # creates: "/opt/albus/gemstone/GsDevKit_home/sys/local/server/projects/Albus{{albus.school.code}}.ston"
+
+  # get newest project config
+  - name: get newest project config
+    become_user: ubuntu
+    become: true
+    shell: "./todeIt albus project get Albus{{albus.school.code}} && ./todeIt albus project refresh"
+    args:
+      chdir: /opt/albus/gemstone/GsDevKit_home/bin
+
+
+
+  # TESTING ONLY !!!
+  # add temporary gemstone repo
+  - name: add temporary gemstone repo
+    become_user: ubuntu
+    become: true
+#    shell: "./todeIt albus mr create {{albus.temp.mcRepoUrl}} && ./todeIt albus mr creds {{albus.temp.mcRepoUrl}} {{albus.temp.mcRepoUser}} {{albus.temp.mcRepoPasswd}}"
+    shell: "./todeIt albus mr create {{albus.temp.mcRepoUrl}}"
+    args:
+      chdir: /opt/albus/gemstone/GsDevKit_home/bin
+    
+      
+  # load code via config
+  - name: load code via config
+    become_user: ubuntu
+    become: true
+    shell: "./todeIt albus project load Albus{{albus.school.code}}"
+    args:
+      chdir: /opt/albus/gemstone/GsDevKit_home/bin
+
+
+
+# schoolConfigurator := (Smalltalk at: #AL{{albus.school.code}}SchoolConfigurator).
+# (Smalltalk at: #ALAlbusInstaller) installSchool: schoolConfigurator environment: '{{albus.school.environment}}'.
+
+    
+# - name: Install Albus code in pharo image
+  #   become_user: ubuntu
+  #   # become: true
+  #   shell: /opt/albus/pharo/pharo albus.image --no-default-preferences st /opt/albus/install/installAlbus.st && touch albusIsInstalled
+  #   args:
+  #     chdir: /opt/albus/pharo
+  #     creates: /opt/albus/pharo/albusIsInstalled
+  # - name: Running Albus
+  #   shell: monit reload && sleep 2 && monit start albus_pharo
+  #   # unless => '/usr/bin/pgrep pharo',
+    
