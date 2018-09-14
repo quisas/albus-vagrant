@@ -2,3 +2,4 @@
 *.log
 albus.yml
 *.retry
+/tmp/*
