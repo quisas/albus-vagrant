@@ -18,6 +18,38 @@
   # - debug: msg="{{ hello.stderr }}"
 
 
+  # Create working folders and symlinks
+  - file:
+      path: /opt/albus/pharo
+      state: directory
+      mode: 0755
+      owner: 'ubuntu'
+      group: 'ubuntu'
+  - file:
+      path: /opt/albus/pharo/main
+      src: /opt/albus/main
+      state: link
+      owner: 'ubuntu'
+      group: 'ubuntu'
+  
+  - name: Add apt architecture i386 for pharo
+    shell: /usr/bin/dpkg --add-architecture i386 && apt-get update
+  
+  # TODO: Oben reinnehmen sobald Ansible diesen Bug released hat: https://github.com/ansible/ansible/pull/24703
+  - name: Install basic apt packages i386 by hand
+    shell: "apt-get install {{item}} -y"
+    with_items:
+    - libc6:i386
+    - zlib1g:i386
+    - libncurses5:i386
+    - libbz2-1.0:i386
+    - libssl1.0.0:i386
+    - libX11.6:i386
+    - libGL.1:i386
+    - libasound2:i386
+
+
+    
   #
   # PHARO SMALLTALK
   #

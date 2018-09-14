@@ -13,9 +13,6 @@
 
       #TODO certbot laufen lassen und Zertifikat erstellen. Braucht jedoch funktionierende Domain...
     
-  - name: Add apt architecture i386 for pharo
-    shell: /usr/bin/dpkg --add-architecture i386 && apt-get update
-  
   - name: Install basic apt packages
     # action: "apt pkg={{item}} state=latest"
     apt:
@@ -29,23 +26,10 @@
     - postfix
     - xauth
     - xpra
-    - monit # =1:5.16-2
+    - monit
     - htop
     - unzip
     - aptitude
-
-  # TODO: Oben reinnehmen sobald Ansible diesen Bug released hat: https://github.com/ansible/ansible/pull/24703
-  - name: Install basic apt packages i386 by hand
-    shell: "apt-get install {{item}} -y"
-    with_items:
-    - libc6:i386
-    - zlib1g:i386
-    - libncurses5:i386
-    - libbz2-1.0:i386
-    - libssl1.0.0:i386
-    - libX11.6:i386
-    - libGL.1:i386
-    - libasound2:i386
 
 
   
@@ -96,12 +80,6 @@
     
   # Create working folders and symlinks
   - file:
-      path: /opt/albus/pharo
-      state: directory
-      mode: 0755
-      owner: 'ubuntu'
-      group: 'ubuntu'
-  - file:
       path: /opt/albus/main/tmp
       state: directory
       mode: 0755
@@ -125,13 +103,16 @@
       state: link
       owner: 'ubuntu'
       group: 'ubuntu'
-  - file:
-      path: /opt/albus/pharo/main
-      src: /opt/albus/main
-      state: link
+
+
+  # Copy the Xauthority file from vagrant to ubuntu user, for X11 forwarding
+  - name: Copy Xauthority
+    copy:
+      remote_src: yes
+      src: /home/vagrant/.Xauthority
+      dest: /home/ubuntu/.Xauthority
       owner: 'ubuntu'
       group: 'ubuntu'
-
 
 
   #    

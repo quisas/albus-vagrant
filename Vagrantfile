@@ -69,48 +69,71 @@ Vagrant.configure(2) do |config|
 
     # Run Ansible from the Vagrant VM
     dev.vm.provision "ansible_local" do |ansible|
-      ansible.playbook = "playbook_install.yml"
+      ansible.playbook = "playbook_install_pharo.yml"
     end
     
   end
 
-
   #
-  # DEMO MACHINE auf Exoscale
+  # GEMSTONE DEVELOPMENT MACHINE
   #
-  config.vm.define :demo do |demo|
+  config.vm.define :gsdev do |dev|
 
-    demo.vm.provider "cloudstack" do |cs, override|
-
-      # Wegen NFS Bug, siehe  https://github.com/hashicorp/vagrant/issues/5401
-      override.nfs.functional = false
-
-
-      override.vm.box = "exoscale-ubuntu-xenial64-10GB"
-
-      cs.api_key    = Secret.exoscale_api_key
-      cs.secret_key = Secret.exoscale_secret_key
-      cs.service_offering_name = "Tiny"
-      cs.security_group_names = ['default']
-
-      # das exoscale cloudstack plugin musste gepatcht werden. Siehe auch:
-      # https://github.com/MissionCriticalCloud/vagrant-cloudstack/pull/168
+    dev.vm.provider "virtualbox" do |vb|
+      # Display the VirtualBox GUI when booting the machine
+      vb.gui = true
       
-      cs.keypair = "dassi"
-      cs.ssh_key = "~/.ssh/id_rsa"
-      cs.ssh_user = "root"
+      # Customize the amount of memory on the VM:
+      vb.memory = "2048"
 
-      #    cs.network_type = "Basic"
-      
     end
 
 
     # Run Ansible from the Vagrant VM
-    demo.vm.provision "ansible_local" do |ansible|
-      ansible.playbook = "playbook_install.yml"
+    dev.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "playbook_install_gemstone.yml"
     end
     
   end
+
+  
+
+  #
+  # DEMO MACHINE auf Exoscale
+  #
+  # config.vm.define :demo do |demo|
+
+  #   demo.vm.provider "cloudstack" do |cs, override|
+
+  #     # Wegen NFS Bug, siehe  https://github.com/hashicorp/vagrant/issues/5401
+  #     override.nfs.functional = false
+
+
+  #     override.vm.box = "exoscale-ubuntu-xenial64-10GB"
+
+  #     cs.api_key    = Secret.exoscale_api_key
+  #     cs.secret_key = Secret.exoscale_secret_key
+  #     cs.service_offering_name = "Tiny"
+  #     cs.security_group_names = ['default']
+
+  #     # das exoscale cloudstack plugin musste gepatcht werden. Siehe auch:
+  #     # https://github.com/MissionCriticalCloud/vagrant-cloudstack/pull/168
+      
+  #     cs.keypair = "dassi"
+  #     cs.ssh_key = "~/.ssh/id_rsa"
+  #     cs.ssh_user = "root"
+
+  #     #    cs.network_type = "Basic"
+      
+  #   end
+
+
+  #   # Run Ansible from the Vagrant VM
+  #   demo.vm.provision "ansible_local" do |ansible|
+  #     ansible.playbook = "playbook_install.yml"
+  #   end
+    
+  # end
   
 
   # Enable provisioning with a shell script. Additional provisioners such as
